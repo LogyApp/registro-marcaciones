@@ -80,7 +80,8 @@ app.post('/api/marcacion', async (req, res) => {
       longitud,
       precision_gps,
       device_fingerprint,
-      user_agent
+      user_agent,
+      observaciones
     } = req.body;
 
     const fecha_hora = new Date();
@@ -88,8 +89,8 @@ app.post('/api/marcacion', async (req, res) => {
 
     const [result] = await pool.execute(
       `INSERT INTO \`Dynamic_registro_marcaciones\`
-        (identificacion, trabajador, cargo, operacion, regional, tipo, latitud, longitud, precision_gps, fecha_hora, device_fingerprint, ip, user_agent)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (identificacion, trabajador, cargo, operacion, regional, tipo, latitud, longitud, precision_gps, fecha_hora, device_fingerprint, ip, user_agent, observaciones)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         identificacion,
         trabajador,
@@ -103,7 +104,8 @@ app.post('/api/marcacion', async (req, res) => {
         fecha_hora,
         device_fingerprint,
         ip,
-        user_agent
+        user_agent,
+        observaciones || null
       ]
     );
 

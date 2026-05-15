@@ -80,6 +80,23 @@
       cursor: not-allowed;
     }
 
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #d1d5e0;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      color: #1a1a2e;
+      background: #fff;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color .2s;
+    }
+
+    textarea:focus { border-color: #000b59; }
+
     .btn {
       padding: 12px 20px;
       border: none;
@@ -201,6 +218,9 @@
         <option value="">Cargando...</option>
       </select>
 
+      <label class="field-label" for="txt-observaciones" style="margin-top:16px;">Observaciones</label>
+      <textarea id="txt-observaciones" placeholder="Opcional..."></textarea>
+
       <div class="btn-row">
         <button class="btn btn-primary" id="btn-ingreso" disabled>Ingreso</button>
         <button class="btn btn-accent"  id="btn-salida"  disabled>Salida</button>
@@ -249,6 +269,7 @@
 
     function resetForm() {
       $('inp-id').value = '';
+      $('txt-observaciones').value = '';
       $('section-worker').classList.add('hidden');
       $('search-alert').classList.add('hidden');
       $('marcacion-alert').classList.add('hidden');
@@ -387,7 +408,8 @@
           longitud:          gps.coords.longitude,
           precision_gps:     gps.coords.accuracy,
           device_fingerprint: fingerprint,
-          user_agent:        navigator.userAgent
+          user_agent:        navigator.userAgent,
+          observaciones:     $('txt-observaciones').value.trim() || null
         };
 
         const res  = await fetch('/api/marcacion', {
