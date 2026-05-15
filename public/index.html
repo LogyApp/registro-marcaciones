@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro de Marcaciones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f0f2f8;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px 48px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .logo-wrap {
+      text-align: center;
+      padding: 24px 0 20px;
+    }
+
+    .logo-wrap img {
+      height: 56px;
+      object-fit: contain;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,11,89,0.10);
+      padding: 28px 24px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #000b59;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 16px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="number"], select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #d1d5e0;
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: inherit;
+      color: #1a1a2e;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input[type="number"]:focus, select:focus { border-color: #000b59; }
+
+    input[type="number"]:disabled, select:disabled {
+      background: #f5f6fa;
+      color: #888;
+      cursor: not-allowed;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      white-space: nowrap;
+    }
+
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .btn-primary { background: #000b59; color: #fff; }
+    .btn-accent  { background: #F55400; color: #fff; }
+    .btn-search  { background: #000b59; color: #fff; flex-shrink: 0; }
+
+    .worker-card {
+      background: #f5f7ff;
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+    }
+
+    .worker-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #000b59;
+      margin-bottom: 4px;
+    }
+
+    .worker-meta {
+      font-size: 14px;
+      color: #5a5f7a;
+      line-height: 1.6;
+    }
+
+    .worker-meta span { display: block; }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-row .btn { flex: 1; padding: 14px; font-size: 16px; }
+
+    .alert {
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    .alert-error   { background: #fff0ee; color: #c0392b; border: 1px solid #f5c6c2; }
+    .alert-success { background: #edfbf3; color: #1a7a45; border: 1px solid #b7efd0; }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #5a5f7a;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .hidden { display: none !important; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-wrap">
+      <img src="https://storage.googleapis.com/logyser-recibo-public/Logyser%20sin%20Nit.png" alt="Logyser" />
+    </div>
+
+    <div class="card" id="section-search">
+      <p class="card-title">Identificación</p>
+      <div class="input-row">
+        <input
+          type="number"
+          id="inp-id"
+          inputmode="numeric"
+          placeholder="Número de identificación"
+          min="10000"
+        />
+        <button class="btn btn-search" id="btn-buscar">Buscar</button>
+      </div>
+      <div id="search-alert" class="hidden"></div>
+    </div>
+
+    <div class="card hidden" id="section-worker">
+      <p class="card-title">Trabajador</p>
+      <div class="worker-card">
+        <div class="worker-name" id="txt-nombre"></div>
+        <div class="worker-meta">
+          <span id="txt-cargo"></span>
+          <span id="txt-regional"></span>
+        </div>
+      </div>
+
+      <label class="field-label" for="sel-operacion">Operación</label>
+      <select id="sel-operacion">
+        <option value="">Cargando...</option>
+      </select>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-ingreso" disabled>Ingreso</button>
+        <button class="btn btn-accent"  id="btn-salida"  disabled>Salida</button>
+      </div>
+
+      <div id="marcacion-alert" class="hidden"></div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      trabajador: null,
+      submitting: false
+    };
+
+    const $ = id => document.getElementById(id);
+
+    function showAlert(containerId, msg, type) {
+      const el = $(containerId);
+      el.className = 'alert alert-' + type;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function hideAlert(containerId) {
+      $(containerId).classList.add('hidden');
+    }
+
+    function setSearchLoading(loading) {
+      $('btn-buscar').disabled = loading;
+      $('btn-buscar').innerHTML = loading
+        ? '<span class="spinner"></span>Buscando'
+        : 'Buscar';
+    }
+
+    function setMarcacionLoading(loading) {
+      state.submitting = loading;
+      $('btn-ingreso').disabled = loading || !$('sel-operacion').value;
+      $('btn-salida').disabled  = loading || !$('sel-operacion').value;
+
+      if (!loading) {
+        $('btn-ingreso').innerHTML = 'Ingreso';
+        $('btn-salida').innerHTML  = 'Salida';
+      }
+    }
+
+    function resetForm() {
+      $('inp-id').value = '';
+      $('section-worker').classList.add('hidden');
+      $('search-alert').classList.add('hidden');
+      $('marcacion-alert').classList.add('hidden');
+      state.trabajador = null;
+    }
+
+    async function buscarTrabajador() {
+      const id = $('inp-id').value.trim();
+      hideAlert('search-alert');
+
+      if (!/^\d{5,}$/.test(id)) {
+        showAlert('search-alert', 'Ingrese un número de identificación válido (mínimo 5 dígitos).', 'error');
+        return;
+      }
+
+      setSearchLoading(true);
+      try {
+        const res = await fetch(`/api/trabajador/${id}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          showAlert('search-alert', 'Trabajador no encontrado o no activo.', 'error');
+          $('section-worker').classList.add('hidden');
+          return;
+        }
+
+        state.trabajador = { identificacion: id, ...data };
+
+        $('txt-nombre').textContent   = data.trabajador;
+        $('txt-cargo').textContent    = data.cargo;
+        $('txt-regional').textContent = data.regional;
+        $('section-worker').classList.remove('hidden');
+        $('marcacion-alert').classList.add('hidden');
+        $('btn-ingreso').disabled = true;
+        $('btn-salida').disabled  = true;
+
+        await cargarOperaciones(data.regional, data.operacion);
+
+      } catch {
+        showAlert('search-alert', 'Error de conexión. Intente nuevamente.', 'error');
+      } finally {
+        setSearchLoading(false);
+      }
+    }
+
+    async function cargarOperaciones(regional, operacionAsignada) {
+      const sel = $('sel-operacion');
+      sel.innerHTML = '<option value="">Cargando...</option>';
+      sel.disabled = true;
+
+      try {
+        const res  = await fetch(`/api/operaciones/${encodeURIComponent(regional)}`);
+        const lista = await res.json();
+
+        sel.innerHTML = '<option value="">Seleccione operación</option>';
+        lista.forEach(op => {
+          const opt = document.createElement('option');
+          opt.value = op;
+          opt.textContent = op;
+          if (op === operacionAsignada) opt.selected = true;
+          sel.appendChild(opt);
+        });
+
+        sel.disabled = false;
+        actualizarBotones();
+      } catch {
+        sel.innerHTML = '<option value="">Error al cargar</option>';
+      }
+    }
+
+    function actualizarBotones() {
+      const tieneOp = !!$('sel-operacion').value;
+      $('btn-ingreso').disabled = !tieneOp || state.submitting;
+      $('btn-salida').disabled  = !tieneOp || state.submitting;
+    }
+
+    async function generarFingerprint() {
+      const raw = navigator.userAgent
+        + screen.width
+        + screen.height
+        + navigator.language
+        + (navigator.hardwareConcurrency || '');
+      const enc = new TextEncoder().encode(raw);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    function obtenerGPS() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error('Geolocalización no soportada'));
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve(pos),
+          err => reject(err),
+          { maximumAge: 0, timeout: 10000, enableHighAccuracy: true }
+        );
+      });
+    }
+
+    async function registrarMarcacion(tipo) {
+      if (state.submitting) return;
+
+      const operacion = $('sel-operacion').value;
+      if (!operacion) return;
+
+      const btnEl = tipo === 'ENTRADA' ? $('btn-ingreso') : $('btn-salida');
+      btnEl.innerHTML = '<span class="spinner"></span>' + (tipo === 'ENTRADA' ? 'Registrando...' : 'Registrando...');
+
+      setMarcacionLoading(true);
+      hideAlert('marcacion-alert');
+
+      let gps;
+      try {
+        gps = await obtenerGPS();
+      } catch {
+        showAlert('marcacion-alert', 'Se requiere ubicación para registrar.', 'error');
+        setMarcacionLoading(false);
+        btnEl.innerHTML = tipo === 'ENTRADA' ? 'Ingreso' : 'Salida';
+        return;
+      }
+
+      try {
+        const fingerprint = await generarFingerprint();
+        const { trabajador } = state;
+
+        const body = {
+          identificacion:    trabajador.identificacion,
+          trabajador:        trabajador.trabajador,
+          cargo:             trabajador.cargo,
+          operacion:         operacion,
+          regional:          trabajador.regional,
+          tipo,
+          latitud:           gps.coords.latitude,
+          longitud:          gps.coords.longitude,
+          precision_gps:     gps.coords.accuracy,
+          device_fingerprint: fingerprint,
+          user_agent:        navigator.userAgent
+        };
+
+        const res  = await fetch('/api/marcacion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showAlert('marcacion-alert', 'Error al registrar la marcación.', 'error');
+          return;
+        }
+
+        const fechaStr = new Date(data.fecha_hora).toLocaleString('es-CO', {
+          dateStyle: 'short', timeStyle: 'medium'
+        });
+        const lat = gps.coords.latitude.toFixed(6);
+        const lng = gps.coords.longitude.toFixed(6);
+
+        showAlert(
+          'marcacion-alert',
+          `✅ Registro #${data.id} cargado el ${fechaStr} — Ubicación: ${lat}, ${lng}`,
+          'success'
+        );
+
+        setTimeout(resetForm, 4000);
+
+      } catch {
+        showAlert('marcacion-alert', 'Error de conexión. Intente nuevamente.', 'error');
+      } finally {
+        setMarcacionLoading(false);
+      }
+    }
+
+    $('btn-buscar').addEventListener('click', buscarTrabajador);
+
+    $('inp-id').addEventListener('keydown', e => {
+      if (e.key === 'Enter') buscarTrabajador();
+    });
+
+    $('inp-id').addEventListener('input', () => {
+      $('inp-id').value = $('inp-id').value.replace(/\D/g, '');
+    });
+
+    $('sel-operacion').addEventListener('change', actualizarBotones);
+
+    $('btn-ingreso').addEventListener('click', () => registrarMarcacion('ENTRADA'));
+    $('btn-salida').addEventListener('click',  () => registrarMarcacion('SALIDA'));
+  </script>
+</body>
+</html>
