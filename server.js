@@ -119,13 +119,14 @@ app.post('/api/marcacion', async (req, res) => {
 
 app.get('/api/marcaciones-hoy/:id', async (req, res) => {
   try {
+    const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
     const [rows] = await pool.execute(
       `SELECT operacion, tipo, fecha_hora
        FROM \`Dynamic_registro_marcaciones\`
        WHERE identificacion = ?
-         AND DATE(CONVERT_TZ(fecha_hora, '+00:00', '-05:00')) = CURDATE()
+         AND DATE(fecha_hora) = ?
        ORDER BY fecha_hora ASC`,
-      [req.params.id]
+      [req.params.id, hoy]
     );
     res.json(rows);
   } catch (err) {
