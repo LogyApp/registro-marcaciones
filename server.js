@@ -117,6 +117,23 @@ app.post('/api/marcacion', async (req, res) => {
   }
 });
 
+app.get('/api/marcaciones-hoy/:id', async (req, res) => {
+  try {
+    const [rows] = await pool.execute(
+      `SELECT operacion, tipo, fecha_hora
+       FROM \`Dynamic_registro_marcaciones\`
+       WHERE identificacion = ?
+         AND DATE(CONVERT_TZ(fecha_hora, '+00:00', '-05:00')) = CURDATE()
+       ORDER BY fecha_hora ASC`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('[/api/marcaciones-hoy]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Error interno del servidor' });
 });

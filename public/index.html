@@ -180,6 +180,51 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .historial-titulo {
+      font-size: 13px;
+      font-weight: 600;
+      color: #000b59;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-top: 22px;
+      margin-bottom: 10px;
+    }
+
+    .historial-vacio {
+      font-size: 13px;
+      color: #9a9eb8;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .historial-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      background: #f5f7ff;
+      font-size: 13px;
+    }
+
+    .historial-item:last-child { margin-bottom: 0; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    .badge-entrada { background: #e8eeff; color: #000b59; }
+    .badge-salida  { background: #fff0e8; color: #F55400; }
+
+    .historial-op   { color: #1a1a2e; font-weight: 500; flex: 1; margin: 0 10px; }
+    .historial-hora { color: #5a5f7a; white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -227,6 +272,11 @@
       </div>
 
       <div id="marcacion-alert" class="hidden"></div>
+
+      <div id="section-historial" class="hidden">
+        <p class="historial-titulo">Registros de hoy</p>
+        <div id="historial-lista"></div>
+      </div>
     </div>
   </div>
 
@@ -267,10 +317,38 @@
       }
     }
 
+    async function cargarHistorial(identificacion) {
+      try {
+        const res = await fetch(`/api/marcaciones-hoy/${identificacion}`);
+        const lista = await res.json();
+        const seccion = $('section-historial');
+        const contenedor = $('historial-lista');
+
+        seccion.classList.remove('hidden');
+        if (lista.length === 0) {
+          contenedor.innerHTML = '<p class="historial-vacio">Sin registros hoy</p>';
+          return;
+        }
+
+        contenedor.innerHTML = lista.map(r => {
+          const hora = new Date(r.fecha_hora).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+          const esEntrada = r.tipo === 'ENTRADA';
+          return `<div class="historial-item">
+            <span class="badge ${esEntrada ? 'badge-entrada' : 'badge-salida'}">${r.tipo}</span>
+            <span class="historial-op">${r.operacion}</span>
+            <span class="historial-hora">${hora}</span>
+          </div>`;
+        }).join('');
+      } catch {
+        // silencioso
+      }
+    }
+
     function resetForm() {
       $('inp-id').value = '';
       $('txt-observaciones').value = '';
       $('section-worker').classList.add('hidden');
+      $('section-historial').classList.add('hidden');
       $('search-alert').classList.add('hidden');
       $('marcacion-alert').classList.add('hidden');
       state.trabajador = null;
@@ -307,6 +385,7 @@
         $('btn-salida').disabled  = true;
 
         await cargarOperaciones(data.regional, data.operacion);
+        await cargarHistorial(id);
 
       } catch {
         showAlert('search-alert', 'Error de conexión. Intente nuevamente.', 'error');
@@ -437,6 +516,7 @@
           'success'
         );
 
+        await cargarHistorial(trabajador.identificacion);
         setTimeout(resetForm, 4000);
 
       } catch {
